@@ -16,8 +16,9 @@ def db_insert(info,dbfile):
         for l in b:
             insert_string1 = ''
             insert_string2 = ''
+            update_string1 = ''
             index = index + 1
-            print('-------------', index, l)
+            # print('-------------', l['id'], l)
             for a in l:
                 # print(a,l[a])
                 if insert_string1!='':
@@ -25,22 +26,36 @@ def db_insert(info,dbfile):
                 if insert_string2!='':
                     insert_string2+=','
                 insert_string1=insert_string1+'\''+a+'\''
-    #            if type(l[a])==type(1):
-    #                insert_string2 = insert_string2 + '\'' + string.atoi(l[a]) + '\''
-    #            else:
                 s=str(l[a]).replace("'", "")
                 insert_string2=insert_string2+'\''+s+'\''
+
+                if update_string1 != '':
+                    update_string1 += ','
+                s = str(l[a]).replace("'", "")
+                update_string1 += '\'' + a + '\'=\'' + s + '\''
+
+
         #    print insert_string1
         #    print insert_string2
             insert_string='insert into info (%s) values (%s)' % (insert_string1,insert_string2)
-            print (insert_string)
-
+            # print (insert_string)
+            insert = True
             try :
                 cursor.execute(insert_string)
                 conn.commit()
-                print("插入数据库成功",index)
+                print("插入数据库成功",str(l['id']))
             except sqlite3.Error as e:
-                print ("插入数据库失败",index, e)
+                print ("插入数据库失败",str(l['id']), e)
+                insert=False
+            if insert==False:
+                update_string = 'update info set %s where id=\'%s\'' % (update_string1, str(l['id']))
+                # print('update sql:' , update_string)
+                try:
+                    cursor.execute(update_string)
+                    conn.commit()
+                    print("更新数据库成功", str(l['id']))
+                except sqlite3.Error as e:
+                    print("更新数据库失败", str(l['id']), e)
 
     cursor.close()
     conn.close()
